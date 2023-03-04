@@ -6,10 +6,11 @@ import { attach } from '../Helper/Images'
 import ImagePicker from 'react-native-image-crop-picker';
 
 
-const AddNote = () => {
+const AddNote = (props) => {
+    const {navigation} = props
     const [imageData, setImageData] = useState('')
     const onPressBack = () => {
-        console.log("back");
+        navigation?.pop()
     } 
 
     const onPressAttachment = () => {
