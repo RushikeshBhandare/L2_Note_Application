@@ -1,0 +1,11 @@
+export const home = require('../Assets/Images/home.png')
+export const notes = require('../Assets/Images/sticky-note.png')
+export const progress = require('../Assets/Images/rise.png')
+export const support = require('../Assets/Images/online-support.png')
+export const plus = require('../Assets/Images/plus.png')
+export const bell = require('../Assets/Images/bell-ring.png')
+export const search = require('../Assets/Images/search.png')
+export const more = require('../Assets/Images/more.png')
+export const leftArrow = require('../Assets/Images/arrow.png')
+export const attach = require('../Assets/Images/attach-file.png')
+ 
