@@ -41,8 +41,9 @@ const NotesScreen = (props) => {
 
     const onChnageSerchTest = (value) => {
         setSearchText(value)
+        console.log("value ", value)
         if (value !== '') {
-            const res = notes.filter((r) => r?.title && r?.title?.toLowerCase()?.includes(value?.toLowerCase()) || r?.desc?.toLowerCase()?.includes(value?.toLowerCase()))
+            const res = ReduxNotes.filter((r) => r?.title && r?.title?.toLowerCase()?.includes(value?.toLowerCase()) || r?.desc?.toLowerCase()?.includes(value?.toLowerCase()))
             setNotes(res)
         }
         else {
