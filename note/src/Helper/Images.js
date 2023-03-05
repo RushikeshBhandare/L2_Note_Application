@@ -8,4 +8,7 @@ export const search = require('../Assets/Images/search.png')
 export const more = require('../Assets/Images/more.png')
 export const leftArrow = require('../Assets/Images/arrow.png')
 export const attach = require('../Assets/Images/attach-file.png')
- 
+export const deleteImage = require('../Assets/Images/delete.png')
+export const share = require('../Assets/Images/share.png')
+export const cancel = require('../Assets/Images/cancel.png') 
+export const profilePlaceholder = require('../Assets/Images/profilePlaceholder.jpg') 

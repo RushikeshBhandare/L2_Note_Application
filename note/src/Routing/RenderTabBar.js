@@ -1,6 +1,8 @@
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native'
 import React from 'react'
 import { search, home, notes, support, progress } from '../Helper/Images'
+import Fonts from '../Helper/Fonts'
+import Colors from '../Helper/Colors'
 
 const RenderTabBar = (props) => {
     const {state, navigation } = props
@@ -60,6 +62,7 @@ const RenderTabBar = (props) => {
           
                 return (
                     <TouchableOpacity
+                        key={item?.id}
                         accessibilityRole="button"
                         // accessibilityState={isFocused ? { selected: true } : {}}
                         // accessibilityLabel={options.tabBarAccessibilityLabel}
@@ -70,9 +73,9 @@ const RenderTabBar = (props) => {
                     >
                         <Image
                             source={item.icon}
-                            style={[styles.iconImage, {tintColor: isFocused ? '#FFA400' : '#BFBFBF'}]}
+                            style={[styles.iconImage, {tintColor: isFocused ? Colors.orenge : Colors.gray}]}
                         />
-                        <Text style={[styles.lableText, { color: isFocused ? '#FFA400' : '#BFBFBF' }]}>
+                        <Text style={[styles.lableText, { color: isFocused ? Colors.orenge : Colors.gray }]}>
                         {item.title}
                         </Text>
                     </TouchableOpacity>
@@ -89,7 +92,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         borderTopLeftRadius: 10,
         borderTopRightRadius: 10,
-        backgroundColor: 'white',
+        backgroundColor: Colors.white,
         elevation: 20
     },
     iconContainer:{
@@ -106,7 +109,8 @@ const styles = StyleSheet.create({
     lableText: {
         fontWeight: 'bold',
         fontSize: 14,
-        marginBottom: 5
+        marginBottom: 5,
+        fontFamily: Fonts.bold
     }
 }) 
 

@@ -1,11 +1,12 @@
 import { View, Text } from 'react-native'
 import React from 'react'
+import DummyTextScreen from '../Components/DummyTextScreen'
 
 const SupportScreen = () => {
   return (
-    <View>
-      <Text>SupportScreen</Text>
-    </View>
+    <DummyTextScreen
+      title={'Support Screen'}
+    />
   )
 }
 

@@ -1,17 +1,44 @@
-import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native'
-import React, { useState } from 'react'
+import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, ScrollView, BackHandler } from 'react-native'
+import React, { useEffect, useRef, useState } from 'react'
 import AppContainer from '../Components/AppContainer'
 import AppHeader from '../Components/AppHeader'
-import { attach } from '../Helper/Images'
+import { attach, cancel } from '../Helper/Images'
 import ImagePicker from 'react-native-image-crop-picker';
+import { useDispatch } from 'react-redux'
+import { addNote, updateNote } from '../Store/Actions/NoteActions'
+import Fonts from '../Helper/Fonts'
+import Colors from '../Helper/Colors'
 
 
 const AddNote = (props) => {
-    const {navigation} = props
+    const {navigation, route} = props
+    console.log("route ", route )
     const [imageData, setImageData] = useState('')
+    const [title, setTitle] = useState('')
+    const [desc, setDesc] = useState('')
+    const [isEdit, setIsEdit] = useState(false)
+    const titleInputRef = useRef({})
+
+    const dispatch = useDispatch()
     const onPressBack = () => {
+        
+        onPresSave()
         navigation?.pop()
     } 
+
+    useEffect(()=> {
+        titleInputRef.current?.focus()
+    }, [])
+
+    useEffect(()=> {
+        if(route?.params?.data) {
+            const {desc, imageData, isEdit, title} = route?.params?.data
+            setIsEdit(isEdit)
+            setImageData(imageData)
+            setTitle(title)
+            setDesc(desc)
+        }
+    }, [])
 
     const onPressAttachment = () => {
         try{
@@ -40,7 +67,10 @@ const AddNote = (props) => {
             <View style={styles.imageContainer}>
             <View style={styles.clearbtn}>
                 <TouchableOpacity onPress={onPressClear}>
-                    <Text style={{fontWeight: 'bold', fontSize: 16}}>clear</Text>
+                   <Image
+                        source={cancel}
+                        style={styles.cancelBtnImage}
+                   />
                 </TouchableOpacity>
             </View>
             <Image
@@ -51,37 +81,72 @@ const AddNote = (props) => {
         )
     }
 
+    const onPresSave = () => {
+        console.log("calling this function", title, desc)
+        try {
+            if(title !== '' || desc !== ''){
+                console.log('hey not colling ')
+                if(isEdit) {
+                    updateNote({
+                        id: route?.params?.data?.id,
+                        title: title,
+                        desc: desc,
+                        imageData: imageData
+                    }, dispatch).then(()=> {
+                        navigation?.pop()
+                    })
+                }else{
+                    addNote({
+                        title: title,
+                        desc: desc,
+                        imageData: imageData
+                    }, dispatch).then(()=> {
+                        navigation?.pop()
+                    })
+                }
+            }
+        }catch (e) {
+            console.log('error ', e)
+        }
+    }
+
     const renderSaveBtn = () => {
         return(
             <View style={styles.btnContainer}>
-                <TouchableOpacity style={styles.saveBtnStyle}>
-                    <Text style={styles.saveBtnText}>save</Text>
+                <TouchableOpacity onPress={onPresSave} style={styles.saveBtnStyle}>
+                    <Text style={styles.saveBtnText}>{isEdit ? 'Update' : 'Save'}</Text>
                 </TouchableOpacity> 
             </View>
         )
     }
  
     return (
-    <View>
+    <View style={styles.rootContainer}>
         <AppHeader
             isBack={true}
             onPressBack={onPressBack}
             showRightBtn={true}
             rightBtnImage = {attach}
             onPressRightBtn={onPressAttachment}
+            containerStyle={styles.headerContainerStyle}
         />
         <ScrollView>
             <AppContainer>
 
                 <TextInput
+                    ref={(ref)=> titleInputRef.current = ref}
                     placeholder='Title'
                     style={styles.title}
+                    value={title}
+                    onChangeText={setTitle}
                 />
 
                 <TextInput
                     placeholder='description'
                     style={styles.desc}
                     multiline
+                    value={desc}
+                    onChangeText={setDesc}
                 />
                 
                 { imageData !== '' && renderAttachedImage() }
@@ -94,21 +159,30 @@ const AddNote = (props) => {
 }
 
 const styles = StyleSheet.create({
+    rootContainer: {
+        backgroundColor: Colors.white,
+        flex :1
+    },
+    headerContainerStyle:{
+        paddingHorizontal: 10
+    },  
     title: {
         fontWeight: 'bold',
         fontSize: 20,
-        backgroundColor: 'white',
+        backgroundColor: Colors.white,
         elevation: 10,
         marginVertical: 10,
         borderRadius :10,
-        padding: 10
+        padding: 10,
+        fontFamily: Fonts.bold
     },
     desc: {
         fontSize: 16,
-        backgroundColor: 'white',
+        backgroundColor: Colors.white,
         elevation: 10,
         borderRadius :10,
-        padding: 10
+        padding: 10,
+        fontFamily: Fonts.regular
     },
     attachedImage: {
         width: '100%',
@@ -116,7 +190,7 @@ const styles = StyleSheet.create({
         borderRadius: 10
     },
     imageContainer: {
-        backgroundColor: 'white',
+        backgroundColor: Colors.white,
         elevation: 10,
         padding: 10,
         marginVertical: 10,
@@ -135,17 +209,23 @@ const styles = StyleSheet.create({
     saveBtnStyle: {
         width: '30%',
         height: 40,
-        backgroundColor: 'yellow',
+        backgroundColor: Colors.orenge,
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 10,
         margin: 10
     },
     saveBtnText: {
-        color: 'black',
+        color: 'white',
         fontWeight: 'bold',
-        fontSize: 16
-    }   
+        fontSize: 16,
+        fontFamily: Fonts.bold
+    },
+    cancelBtnImage: {
+        width: 20,
+        height: 20,
+        tintColor: Colors.gray
+    } 
 })
 
 export default AddNote

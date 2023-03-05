@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native'
 import React from 'react'
-import { bell, leftArrow } from '../Helper/Images'
+import { bell, leftArrow, profilePlaceholder } from '../Helper/Images'
+import Colors from '../Helper/Colors'
 
 const AppHeader = ({
     isBack,
@@ -10,10 +11,11 @@ const AppHeader = ({
     title,
     showRightBtn,
     rightBtnImage,
-    onPressRightBtn
+    onPressRightBtn,
+    containerStyle
 }) => {
     return (
-        <View style={styles.mainContainer}>
+        <View style={[styles.mainContainer, containerStyle]}>
             {
                 isBack && (
                     <TouchableOpacity onPress={onPressBack} style={styles.profileContainer}>
@@ -29,7 +31,7 @@ const AppHeader = ({
                     <View style={styles.profileContainer}>
                         <Image
                             style={styles.profileImage}
-                            source={{ uri: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=600' }}
+                            source={profilePlaceholder}
                         />
                     </View>
                 )
@@ -65,7 +67,8 @@ AppHeader.defaultProps = {
     title: '',
     showRightBtn: false,
     rightBtnImage: bell,
-    onPressRightBtn: () => {}
+    onPressRightBtn: () => {},
+    containerStyle: {}
 }
 
 const styles = StyleSheet.create({
@@ -95,7 +98,7 @@ const styles = StyleSheet.create({
     titleText: {
         fontWeight: 'bold',
         fontSize: 24,
-        color: 'gray'
+        color: Colors.grayTitle
     },
     profileImage: {
         width: 40,
@@ -103,8 +106,8 @@ const styles = StyleSheet.create({
         borderRadius: 50
     },
     rightBtnImage: {
-        width: 30,
-        height: 30,
+        width: 25,
+        height: 25,
         borderRadius: 50
     },
     backBtnImage: {

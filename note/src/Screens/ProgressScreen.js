@@ -1,11 +1,12 @@
 import { View, Text } from 'react-native'
 import React from 'react'
+import DummyTextScreen from '../Components/DummyTextScreen'
 
 const ProgressScreen = () => {
   return (
-    <View>
-      <Text>ProgressScreen</Text>
-    </View>
+    <DummyTextScreen
+    title={'Progress Screen'}
+  />
   )
 }
 

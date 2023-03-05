@@ -1,14 +1,53 @@
-import { View, Text, StyleSheet, TextInput, Image, FlatList, TouchableOpacity } from 'react-native'
-import React, { useState } from 'react'
+import { View, Text, StyleSheet, TextInput, Image, FlatList, TouchableOpacity, ActivityIndicator, Share } from 'react-native'
+import React, { useEffect, useState } from 'react'
 import AppHeader from '../Components/AppHeader'
-import { more, search } from '../Helper/Images'
+import { more, plus, search } from '../Helper/Images'
 import AppContainer from '../Components/AppContainer'
+import { useDispatch, useSelector } from 'react-redux'
+import BottomOptionModal from '../Components/BottomOptionModal'
+import { deleteNote, getDataFromStorage, getNotes } from '../Store/Actions/NoteActions'
+import Fonts from '../Helper/Fonts'
+import Colors from '../Helper/Colors'
 
 const NotesScreen = (props) => {
     const { navigation } = props
     const [searchText, setSearchText] = useState('')
-    const renderSearch = () =>{
-        return(
+    const [notes, setNotes] = useState([])
+    const [showModal, setShowModal] = useState(false)
+    const [selectedItem, setSelectedItem] = useState({})
+    const [isLoading, setIsLoading] = useState(true)
+    const dispatch = useDispatch()
+    const ReduxNotes = useSelector((store) => store?.NoteReducer?.notes)
+
+    useEffect(() => {
+        getNotes(dispatch).then(() => {
+            setIsLoading(false)
+        }).catch(() => {
+            setIsLoading(false)
+        })
+    }, [])
+
+    useEffect(() => {
+        if (ReduxNotes) {
+            setNotes(ReduxNotes)
+        }
+    }, [ReduxNotes])
+
+    const onChnageSerchTest = (value) => {
+        setSearchText(value)
+        console.log("value type ", typeof (value));
+        if (value !== '') {
+            const res = notes.filter((r) => r?.title && r?.title?.includes(value) || r?.desc?.includes(value))
+            setNotes(res)
+            console.log("result ", res);
+        }
+        else {
+            setNotes(ReduxNotes)
+        }
+    }
+
+    const renderSearch = () => {
+        return (
             <View style={styles.searchInputContainer}>
                 <Image
                     source={search}
@@ -18,137 +57,265 @@ const NotesScreen = (props) => {
                     style={styles.inputText}
                     placeholder='Search'
                     value={searchText}
-                    onChangeText={setSearchText}
+                    onChangeText={onChnageSerchTest}
                 />
             </View>
         )
     }
 
-    const onPressOption = () => {
-    }
-    
-    const onPressItem = () => {
-        navigation?.push('createNote')
-
-         console.log('hi');
+    const onPressOption = (item) => {
+        setSelectedItem(item)
+        setShowModal(true)
     }
 
-    const listItem = ({item, index}) => {
-        const showImg = item === 22
-        return(
-            <TouchableOpacity 
+    const onPressItem = (item) => {
+        navigation?.push('createNote', {
+            data: {
+                isEdit: true,
+                ...item
+            }
+        })
+    }
+
+    const listItem = ({ item, index }) => {
+        const showImg = item?.imageData !== ''
+        const title = item?.title
+        return (
+            <View
                 style={styles.listItemContainer}
-                onPress={onPressItem}
             >
-                {
-                    showImg && (
-                        <View>
-                            <Image
-                                source={{uri: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=600'}}
-                                style={styles.itemImage}
-                            />
-                        </View>
-                    )
-                }
+                <TouchableOpacity
+                    style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}
+                    onPress={() => onPressItem(item)}
+                >
 
-               <View style={styles.textContainer}>
-                    <Text style={styles.titleText}>Title</Text>
-                    <Text style={styles.descriptionText}>description</Text>
-               </View>
+                    {
+                        showImg && (
+                            <View>
+                                <Image
+                                    source={{ uri: item?.imageData }}
+                                    style={styles.itemImage}
+                                />
+                            </View>
+                        )
+                    }
 
-               <TouchableOpacity
-                onPress={onPressOption}
-               >
-                      <Image
-                    source={more}
-                    style={styles.moreOptionImage}
-                />
-               </TouchableOpacity>
-            </TouchableOpacity>
+                    <View style={styles.textContainer}>
+                        <Text numberOfLines={1} style={styles.titleText}>{title}</Text>
+                        <Text numberOfLines={1} style={styles.descriptionText}>{item?.desc}</Text>
+                    </View>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={styles.optionBtnContainer}
+                    onPress={() => onPressOption(item)}
+                >
+                    <Image
+                        source={more}
+                        style={styles.moreOptionImage}
+                    />
+                </TouchableOpacity>
+            </View>
         )
     }
-
 
     const renderNotesList = () => {
         return (
             <View style={styles.listContainer}>
+                {renderSearch()}
                 <FlatList
-                    data={[2,2,2,2,2,22,2,2,2,22,2,2,2,22,2,2,2,2,2,]}
+                    data={notes}
                     renderItem={listItem}
                     showsVerticalScrollIndicator={false}
-                    keyExtractor={({item, index})=> `${item?.id} ${index}` }
-                />               
+                    keyExtractor={(item) => `${item?.id}`}
+                />
+                <TouchableOpacity onPress={onPressAdd} style={styles.addBtn} >
+                    <Image
+                        source={plus}
+                        style={styles.addbtnImage}
+                    />
+                </TouchableOpacity>
             </View>
         )
     }
 
-  return (
-    <AppContainer>
-        <AppHeader 
-            showProfile={true}
-            title={'Note'}
-            showTitle={true}
-            showRightBtn={true}    
-        />
-        {renderSearch()}
-        {renderNotesList()}
-    </AppContainer>
+    const onPressAdd = () => {
+        navigation?.push('createNote')
+    }
+
+    const onPressClose = () => {
+        setShowModal(false)
+    }
+
+    const onPressShare = async() => {
+        try{
+            await Share.share({
+                message: `${selectedItem?.title}\n\n${selectedItem?.desc}`,
+              })
+            setShowModal(false)
+            setSelectedItem({})
+        }catch (e) {
+            console.log("error ", e);
+        }
+    }
+
+    const onPressDelete = () => {
+        deleteNote({ id: selectedItem?.id }, dispatch).then(() => {
+        })
+        setSelectedItem({})
+        setShowModal(false)
+    }
+
+    const renderCreateFirstPost = () => {
+        return (
+            <View style={styles.newPostContainer}>
+                <Text style={styles.newPostTitle}>no post yet</Text>
+                <Text style={styles.newPostText}>Journaling can have many benifits for both
+                    mental and physical health. it can be a helpful tool for managing strees, improving
+                    self-awareness, and processing emothions.
+                </Text>
+                <TouchableOpacity onPress={onPressAdd} style={styles.addBtnforNewPost} >
+                    <Image
+                        source={plus}
+                        style={styles.addbtnImage}
+                    />
+                </TouchableOpacity>
+            </View>
+        )
+    }
+
+    return (
+        <AppContainer>
+            <AppHeader
+                showProfile={true}
+                title={'Note'}
+                showTitle={true}
+                showRightBtn={true}
+            />
+            {isLoading ?
+                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                    <ActivityIndicator size={'large'} color='red' />
+                </View>
+                : notes?.length > 0 ?
+                    renderNotesList() :
+                    renderCreateFirstPost()
+            }
+            <BottomOptionModal
+                isVisible={showModal}
+                onPressClose={onPressClose}
+                onPressShare={onPressShare}
+                onPressDelete={onPressDelete}
+            />
+        </AppContainer>
     )
 }
 
 const styles = StyleSheet.create({
-   mainContainer: {
-    flex: 1
-   },
-   searchInputContainer:{
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderBottomColor: 'blue',
-    borderBottomWidth: 1
-   },
-   searchIcon:{
-    width: 20,
-    height: 20
-   },
-   inputText: {
-    fontSize: 16
-   },
-   listContainer:{
-    flex:1
-   },
-   listItemContainer: {
-    // borderWidth: 1,
-    borderRadius: 10,
-    marginVertical: 10,
-    padding: 5,
-    flexDirection: 'row',
-    alignItems: 'center',
-    elevation: 5,
-    backgroundColor: 'white',
-    marginHorizontal: 5
-   },
-   textContainer: {
-    flex: 1,
-    paddingHorizontal: 10
-   },
-   itemImage: {
-    width: 40,
-    height: 40,
-    borderRadius :10,
+    mainContainer: {
+        flex: 1
+    },
+    searchInputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderBottomColor: 'blue',
+        borderBottomWidth: 1
+    },
+    searchIcon: {
+        width: 20,
+        height: 20
+    },
+    inputText: {
+        fontSize: 16,
+        fontFamily: Fonts.regular
+    },
+    listContainer: {
+        flex: 1
+    },
+    listItemContainer: {
+        // borderWidth: 1,
+        borderRadius: 10,
+        marginVertical: 10,
+        padding: 5,
+        flexDirection: 'row',
+        alignItems: 'center',
+        elevation: 5,
+        backgroundColor: Colors.white,
+        marginHorizontal: 5
+    },
+    textContainer: {
+        flex: 1,
+        padding: 5
+    },
+    itemImage: {
+        width: 40,
+        height: 40,
+        borderRadius: 10,
 
-   },
-   titleText:{
-    fontWeight: 'bold',
-    fontSize: 16
-   },
-   descriptionText:{
-    fontSize: 14
-   },
-   moreOptionImage:{
-    width: 20,
-    height: 20,
-    tintColor: 'gray'
-   }
+    },
+    titleText: {
+        fontWeight: 'bold',
+        fontSize: 16,
+        color: Colors.gray,
+        fontFamily: Fonts.bold
+        // padding:10
+    },
+    descriptionText: {
+        fontSize: 14,
+        color: Colors.gray,
+        fontFamily: Fonts.regular
+    },
+    moreOptionImage: {
+        width: 20,
+        height: 20,
+        tintColor: Colors.gray
+    },
+    addBtn: {
+        width: 50,
+        height: 50,
+        backgroundColor: Colors.orenge,
+        position: 'absolute',
+        bottom: 10,
+        right: 10,
+        borderRadius: 50,
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    optionBtnContainer: {
+        alignItems: 'flex-end',
+        width: '10%'
+    },
+    addbtnImage: {
+        width: 20,
+        height: 20,
+        tintColor: Colors.white
+    },
+    newPostContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    newPostTitle: {
+        fontWeight: 'bold',
+        fontSize: 26,
+        fontFamily: Fonts.bold,
+        color: Colors.grayTitle
+    },
+    newPostText: {
+        color: Colors.grayTitle,
+        fontWeight: '400',
+        fontSize: 16,
+        textAlign: 'center',
+        fontFamily: Fonts.regular
+    },
+    addBtnforNewPost: {
+        width: 50,
+        height: 50,
+        backgroundColor: Colors.orenge,
+        marginTop: 10,
+        borderRadius: 50,
+        alignItems: 'center',
+        justifyContent: 'center'
+    }
 })
 
 export default NotesScreen
