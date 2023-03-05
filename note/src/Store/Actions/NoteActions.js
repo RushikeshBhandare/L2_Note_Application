@@ -5,10 +5,7 @@ export const getNotes = async (dispatch) => {
         try {
             const data = await AsyncStorage.getItem('Notes', data)
             if(data !== null) {
-                console.log("data ", data)
                 const list = JSON.parse(data) 
-                console.log("list ", list );
-                console.log("type of list ", typeof(list));
                 dispatch({
                     type: 'addNote',
                     payload: list
@@ -17,7 +14,7 @@ export const getNotes = async (dispatch) => {
             resolve()
         } catch (e) {
             reject()
-            console.log('error add note ', e);
+            console.log('error ', e);
         }
     })
 }
@@ -26,7 +23,7 @@ export const addNote = async (payload, dispatch) => {
     return new Promise(async (resolve, reject) => {
         try {
             const date = new Date();
-            const time = `${date?.getDate()}.${date?.getMonth()}.${date?.getFullYear()}`
+            const time = `${date?.getDate()}.${date?.getMonth() + 1}.${date?.getFullYear()}`
             const note = {
                 ...payload,
                 id: Math.random(0, 10000),
@@ -40,7 +37,6 @@ export const addNote = async (payload, dispatch) => {
             } else {
                 list = [note]
             }
-            console.log("list ", list)
             await AsyncStorage.setItem('Notes', JSON.stringify(list))
             dispatch({
                 type: 'addNote',
@@ -49,7 +45,7 @@ export const addNote = async (payload, dispatch) => {
             resolve()
         } catch (e) {
             reject()
-            console.log('error add note ', e);
+            console.log('error', e);
         }
     })
 }
@@ -59,11 +55,8 @@ export const updateNote = async (payload, dispatch) => {
         try {
             const data = await AsyncStorage.getItem('Notes')
             if(data !== null) {
-                console.log("pay load ", payload)
                 const newArray = JSON.parse(data)?.filter((i)=> i?.id !== payload?.id)
-                console.log("new array list ", newArray)
                 let  list = [payload, ...newArray]
-                console.log("list ", list)
                 await AsyncStorage.setItem('Notes', JSON.stringify(list))
                 dispatch({
                     type: 'updateNote',
@@ -74,7 +67,7 @@ export const updateNote = async (payload, dispatch) => {
 
         } catch (e) {
             reject()
-            console.log('error add note ', e);
+            console.log('error', e);
         }
     })
 }
@@ -84,11 +77,8 @@ export const deleteNote = async (payload, dispatch) => {
         try {
             const data = await AsyncStorage.getItem('Notes')
             if(data !== null) {
-                console.log("pay load ", payload)
                 const newArray = JSON.parse(data)?.filter((i)=> i?.id !== payload?.id)
-                console.log("new array list ", newArray)
                 let  list = [...newArray]
-                console.log("list ", list)
                 await AsyncStorage.setItem('Notes', JSON.stringify(list))
                 dispatch({
                     type: 'updateNote',
@@ -99,7 +89,7 @@ export const deleteNote = async (payload, dispatch) => {
 
         } catch (e) {
             reject()
-            console.log('error add note ', e);
+            console.log('error', e);
         }
     })
 }

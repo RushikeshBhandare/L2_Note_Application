@@ -12,22 +12,19 @@ import Colors from '../Helper/Colors'
 
 const AddNote = (props) => {
     const {navigation, route} = props
-    console.log("route ", route )
     const [imageData, setImageData] = useState('')
     const [title, setTitle] = useState('')
     const [desc, setDesc] = useState('')
     const [isEdit, setIsEdit] = useState(false)
-    const titleInputRef = useRef({})
+    const destInputRef = useRef({})
 
     const dispatch = useDispatch()
     const onPressBack = () => {
-        
-        onPresSave()
         navigation?.pop()
     } 
 
     useEffect(()=> {
-        titleInputRef.current?.focus()
+        destInputRef.current?.focus()
     }, [])
 
     useEffect(()=> {
@@ -42,7 +39,6 @@ const AddNote = (props) => {
 
     const onPressAttachment = () => {
         try{
-            console.log('trying ')
             ImagePicker.openPicker({
                 width: 300,
                 height: 400,
@@ -82,10 +78,8 @@ const AddNote = (props) => {
     }
 
     const onPresSave = () => {
-        console.log("calling this function", title, desc)
         try {
             if(title !== '' || desc !== ''){
-                console.log('hey not colling ')
                 if(isEdit) {
                     updateNote({
                         id: route?.params?.data?.id,
@@ -134,7 +128,6 @@ const AddNote = (props) => {
             <AppContainer>
 
                 <TextInput
-                    ref={(ref)=> titleInputRef.current = ref}
                     placeholder='Title'
                     style={styles.title}
                     value={title}
@@ -142,6 +135,7 @@ const AddNote = (props) => {
                 />
 
                 <TextInput
+                    ref={(ref)=> destInputRef.current = ref}
                     placeholder='description'
                     style={styles.desc}
                     multiline

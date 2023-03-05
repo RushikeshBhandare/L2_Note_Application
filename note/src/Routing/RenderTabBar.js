@@ -1,11 +1,13 @@
-import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import { View, Text, TouchableOpacity, Image, StyleSheet, Keyboard } from 'react-native'
 import { search, home, notes, support, progress } from '../Helper/Images'
 import Fonts from '../Helper/Fonts'
 import Colors from '../Helper/Colors'
 
 const RenderTabBar = (props) => {
     const {state, navigation } = props
+    const [isKeyBoardVisible, setIsKeyBoardVisible] = useState(true)
+
     const tabArray = [
         {
           id: 0,
@@ -37,51 +39,61 @@ const RenderTabBar = (props) => {
         }
       ]
     
-    console.log("statte ", state);
-
+    useEffect(() => {
+      const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
+        setIsKeyBoardVisible(false)
+      })
+      const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+        setIsKeyBoardVisible(true)
+      })
+  
+      return () => {
+        showSubscription.remove()
+        hideSubscription.remove()
+      }
+    }, [])
+  
 
   return (
-    <View style={styles.mainContainer}>
-        {
-            tabArray.map((item)=>{
-                console.log('state ', state)
-                const isFocused = state.index === item.id
-                const onPress = () => {
-                    console.log("pressing ")
-                    const event = navigation.emit({
-                      type: 'tabPress',
-                      target: item.key,
-                      canPreventDefault: true,
-                    });
-                    
-                    if (!isFocused && !event.defaultPrevented) {
-                      // The `merge: true` option makes sure that the params inside the tab screen are preserved
-                      navigation.navigate({ name: item.title, merge: true });
-                    }
-                  };
-          
-                return (
-                    <TouchableOpacity
-                        key={item?.id}
-                        accessibilityRole="button"
-                        // accessibilityState={isFocused ? { selected: true } : {}}
-                        // accessibilityLabel={options.tabBarAccessibilityLabel}
-                        // testID={options.tabBarTestID}
-                        onPress={onPress}
-                        // onLongPress={onLongPress}
-                        style={styles.iconContainer}
-                    >
-                        <Image
-                            source={item.icon}
-                            style={[styles.iconImage, {tintColor: isFocused ? Colors.orenge : Colors.gray}]}
-                        />
-                        <Text style={[styles.lableText, { color: isFocused ? Colors.orenge : Colors.gray }]}>
-                        {item.title}
-                        </Text>
-                    </TouchableOpacity>
-                )
-            })
-        }
+    <View>
+      {
+        isKeyBoardVisible &&
+        <View style={styles.mainContainer}>
+            {
+                tabArray.map((item)=>{
+                    const isFocused = state.index === item.id
+                    const onPress = () => {
+                        const event = navigation.emit({
+                          type: 'tabPress',
+                          target: item.key,
+                          canPreventDefault: true,
+                        });
+                        
+                        if (!isFocused && !event.defaultPrevented) {
+                          navigation.navigate({ name: item.title, merge: true });
+                        }
+                      };
+              
+                    return (
+                        <TouchableOpacity
+                            key={item?.id}
+                            accessibilityRole="button"
+                            onPress={onPress}
+                            style={styles.iconContainer}
+                        >
+                            <Image
+                                source={item.icon}
+                                style={[styles.iconImage, {tintColor: isFocused ? Colors.orenge : Colors.gray}]}
+                            />
+                            <Text style={[styles.lableText, { color: isFocused ? Colors.orenge : Colors.gray }]}>
+                            {item.title}
+                            </Text>
+                        </TouchableOpacity>
+                    )
+                })
+            }
+        </View>
+      }
     </View>
   )
 }

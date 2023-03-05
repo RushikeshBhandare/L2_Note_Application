@@ -13,9 +13,15 @@ const Tab = createBottomTabNavigator();
 
 const Stack = createStackNavigator()
 
+const renderBottomTab = ({state, navigation}) => {
+  return (
+    <RenderTabBar state={state} navigation={navigation}/>
+  )
+}
+
 const RenderTabView = () => {
     return (
-        <Tab.Navigator tabBar={RenderTabBar}  screenOptions={{ headerShown: false }} initialRouteName={'Notes'}>
+        <Tab.Navigator tabBar={renderBottomTab}  screenOptions={{ headerShown: false }} initialRouteName={'Notes'}>
             <Tab.Screen name='Home' component={HomeScreen}/>
             <Tab.Screen name='Notes' component={NotesScreen}/>
             <Tab.Screen name='Progress' component={ProgressScreen}/>

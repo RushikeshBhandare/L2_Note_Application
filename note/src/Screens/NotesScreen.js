@@ -16,6 +16,7 @@ const NotesScreen = (props) => {
     const [showModal, setShowModal] = useState(false)
     const [selectedItem, setSelectedItem] = useState({})
     const [isLoading, setIsLoading] = useState(true)
+    const [noPostYet, setNoPostYet] = useState(false)
     const dispatch = useDispatch()
     const ReduxNotes = useSelector((store) => store?.NoteReducer?.notes)
 
@@ -29,17 +30,20 @@ const NotesScreen = (props) => {
 
     useEffect(() => {
         if (ReduxNotes) {
-            setNotes(ReduxNotes)
+            if (ReduxNotes?.length > 0) {
+                setNotes(ReduxNotes)
+                setNoPostYet(false)
+            } else {
+                setNoPostYet(true)
+            }
         }
     }, [ReduxNotes])
 
     const onChnageSerchTest = (value) => {
         setSearchText(value)
-        console.log("value type ", typeof (value));
         if (value !== '') {
-            const res = notes.filter((r) => r?.title && r?.title?.includes(value) || r?.desc?.includes(value))
+            const res = notes.filter((r) => r?.title && r?.title?.toLowerCase()?.includes(value?.toLowerCase()) || r?.desc?.toLowerCase()?.includes(value?.toLowerCase()))
             setNotes(res)
-            console.log("result ", res);
         }
         else {
             setNotes(ReduxNotes)
@@ -122,19 +126,12 @@ const NotesScreen = (props) => {
     const renderNotesList = () => {
         return (
             <View style={styles.listContainer}>
-                {renderSearch()}
                 <FlatList
                     data={notes}
                     renderItem={listItem}
                     showsVerticalScrollIndicator={false}
                     keyExtractor={(item) => `${item?.id}`}
                 />
-                <TouchableOpacity onPress={onPressAdd} style={styles.addBtn} >
-                    <Image
-                        source={plus}
-                        style={styles.addbtnImage}
-                    />
-                </TouchableOpacity>
             </View>
         )
     }
@@ -147,14 +144,14 @@ const NotesScreen = (props) => {
         setShowModal(false)
     }
 
-    const onPressShare = async() => {
-        try{
+    const onPressShare = async () => {
+        try {
             await Share.share({
                 message: `${selectedItem?.title}\n\n${selectedItem?.desc}`,
-              })
+            })
             setShowModal(false)
             setSelectedItem({})
-        }catch (e) {
+        } catch (e) {
             console.log("error ", e);
         }
     }
@@ -192,13 +189,24 @@ const NotesScreen = (props) => {
                 showTitle={true}
                 showRightBtn={true}
             />
+            {!noPostYet && renderSearch()}
             {isLoading ?
                 <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                     <ActivityIndicator size={'large'} color='red' />
                 </View>
-                : notes?.length > 0 ?
-                    renderNotesList() :
-                    renderCreateFirstPost()
+                : noPostYet ? renderCreateFirstPost()
+                    : notes?.length > 0 &&
+                    renderNotesList()
+            }
+            {
+                !noPostYet && (
+                    <TouchableOpacity onPress={onPressAdd} style={styles.addBtn} >
+                        <Image
+                            source={plus}
+                            style={styles.addbtnImage}
+                        />
+                    </TouchableOpacity>
+                )
             }
             <BottomOptionModal
                 isVisible={showModal}
@@ -218,15 +226,19 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         borderBottomColor: 'blue',
+        justifyContent: 'center',
         borderBottomWidth: 1
     },
     searchIcon: {
-        width: 20,
-        height: 20
+        width: 22,
+        height: 22,
+        tintColor: Colors.gray
     },
     inputText: {
         fontSize: 16,
-        fontFamily: Fonts.regular
+        fontFamily: Fonts.regular,
+        // borderWidth :1,
+        flex :1
     },
     listContainer: {
         flex: 1
